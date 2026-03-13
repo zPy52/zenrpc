@@ -1,0 +1,51 @@
+{
+  "name": "zenrpc",
+  "version": "1.0.0",
+  "description": "Type-safe RPC for Next.js app and pages router",
+  "keywords": [
+    "nextjs",
+    "rpc",
+    "typescript",
+    "zod"
+  ],
+  "license": "MIT",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "zenrpc": "./dist/cli.cjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prepare": "npm run build"
+  },
+  "peerDependencies": {
+    "zod": "^3.23.8 || ^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.14",
+    "tsdown": "^0.21.2",
+    "typescript": "^5.8.2",
+    "vitest": "^3.2.4",
+    "zod": "^3.24.2"
+  }
+}

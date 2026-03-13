@@ -1,0 +1,4 @@
+interface:
+  display_name: "ZenRPC"
+  short_description: "Scaffold and use ZenRPC in Next.js"
+  default_prompt: "Use $zenrpc to add or wire a typed ZenRPC API in this Next.js project."
