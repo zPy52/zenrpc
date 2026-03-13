@@ -59,8 +59,28 @@ function detectPackageManager(cwd: string): PackageManager {
   return "npm";
 }
 
+export function resolveOwnPackageJsonPath(startDir: string) {
+  let currentDir = startDir;
+
+  while (true) {
+    const packageJsonPath = resolve(currentDir, "package.json");
+
+    if (existsSync(packageJsonPath)) {
+      return packageJsonPath;
+    }
+
+    const parentDir = resolve(currentDir, "..");
+
+    if (parentDir === currentDir) {
+      throw new Error("Unable to locate zenrpc package.json from the CLI runtime.");
+    }
+
+    currentDir = parentDir;
+  }
+}
+
 function readOwnVersion() {
-  const packageJsonPath = resolve(__dirname, "..", "..", "package.json");
+  const packageJsonPath = resolveOwnPackageJsonPath(__dirname);
   const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8")) as { version: string };
   return packageJson.version;
 }
@@ -72,7 +92,7 @@ function readPackageName(packageJsonPath: string) {
 
 function resolveRuntimeImport(cwd: string, fromFile: string) {
   const projectPackageJsonPath = resolve(cwd, "package.json");
-  const ownPackageJsonPath = resolve(__dirname, "..", "..", "package.json");
+  const ownPackageJsonPath = resolveOwnPackageJsonPath(__dirname);
   const projectPackageName = readPackageName(projectPackageJsonPath);
   const ownPackageName = readPackageName(ownPackageJsonPath);
 

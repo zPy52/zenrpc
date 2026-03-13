@@ -1,7 +1,7 @@
 import { describe, expect, expectTypeOf, test } from "vitest";
 import { z } from "zod";
 
-import n, { createClient } from "../src/index";
+import zr, { createClient } from "../src/index";
 
 const server = zr.createServer({
   health: zr.endpoint({

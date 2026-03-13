@@ -1,10 +1,10 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 
 import { afterEach, describe, expect, test } from "vitest";
 
-import { runInit } from "../src/cli/init";
+import { resolveOwnPackageJsonPath, runInit } from "../src/cli/init";
 
 const tempDirs: string[] = [];
 
@@ -34,6 +34,18 @@ function createTempProject(packageName: string) {
 }
 
 describe("runInit", () => {
+  test("finds the package.json for both source and built CLI layouts", () => {
+    const cwd = mkdtempSync(resolve(tmpdir(), "zenrpc-layout-"));
+    tempDirs.push(cwd);
+
+    writeFileSync(resolve(cwd, "package.json"), JSON.stringify({ name: "zenrpc", version: "1.0.2" }));
+    mkdirSync(resolve(cwd, "src/cli"), { recursive: true });
+    mkdirSync(resolve(cwd, "dist"), { recursive: true });
+
+    expect(resolveOwnPackageJsonPath(resolve(cwd, "src/cli"))).toBe(resolve(cwd, "package.json"));
+    expect(resolveOwnPackageJsonPath(resolve(cwd, "dist"))).toBe(resolve(cwd, "package.json"));
+  });
+
   test("uses relative local imports when run inside the zenrpc package repo", () => {
     const cwd = createTempProject("zenrpc");
 
