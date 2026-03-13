@@ -120,10 +120,10 @@ function createNextrpcFiles(cwd: string, sourceDir: string): GeneratedFile[] {
   return [
     {
       contents: [
-        'import n from "zenrpc";',
+        'import zr from "zenrpc";',
         'import type { PublicApi } from "./api-types";',
         "",
-        "export const rpc = n.createClient<PublicApi>({",
+        "export const rpc = zr.createClient<PublicApi>({",
         '  url: "/api/rpc"',
         "});",
         ""
@@ -143,30 +143,30 @@ function createNextrpcFiles(cwd: string, sourceDir: string): GeneratedFile[] {
       contents: [
         'import "server-only";',
         "",
-        'import n from "zenrpc";',
+        'import zr from "zenrpc";',
         'import { z } from "zod";',
         "",
         "const taskLists = {",
         "  default: [{ _id: \"task_1\", text: \"Ship ZenRPC\" }]",
         "};",
         "",
-        "export const server = n.createServer({",
+        "export const server = zr.createServer({",
         "  posts: {",
         "    options: {",
-        "      get: n.endpoint({ postId: z.string() }, async ({ postId }) => ({",
+        "      get: zr.endpoint({ postId: z.string() }, async ({ postId }) => ({",
         "          body: `This post came from ${postId}.`,",
         "          id: postId,",
         "          title: \"Example post\"",
         "        }))",
         "    }",
         "  },",
-        "  tasks: n.createServer({",
-        "    add: n.endpoint({ text: z.string() }, async ({ text }) => {",
+        "  tasks: zr.createServer({",
+        "    add: zr.endpoint({ text: z.string() }, async ({ text }) => {",
         "        const task = { _id: `task_${Date.now()}`, text };",
         "        taskLists.default.push(task);",
         "        return task;",
         "      }),",
-        "    get: n.endpoint({ taskListId: z.string() }, async ({ taskListId }) => {",
+        "    get: zr.endpoint({ taskListId: z.string() }, async ({ taskListId }) => {",
         "        return taskListId === \"default\" ? taskLists.default : [];",
         "      })",
         "  })",
@@ -187,10 +187,10 @@ function createRouteFiles(cwd: string, sourceDir: string, router: RouterMode): G
     const appRouteFile = chooseAppRouteFile(cwd);
     files.push({
       contents: [
-        'import n from "zenrpc";',
+        'import zr from "zenrpc";',
         `import { server } from "${relativeImport(appRouteFile, serverFile)}";`,
         "",
-        "export const POST = n.POSTHandler(server);",
+        "export const POST = zr.POSTHandler(server);",
         ""
       ].join("\n"),
       path: appRouteFile
@@ -201,10 +201,10 @@ function createRouteFiles(cwd: string, sourceDir: string, router: RouterMode): G
     const pagesRouteFile = choosePagesRouteFile(cwd);
     files.push({
       contents: [
-        'import n from "zenrpc";',
+        'import zr from "zenrpc";',
         `import { server } from "${relativeImport(pagesRouteFile, serverFile)}";`,
         "",
-        "export default n.createPagesHandler(server);",
+        "export default zr.createPagesHandler(server);",
         ""
       ].join("\n"),
       path: pagesRouteFile

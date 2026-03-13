@@ -3,13 +3,13 @@ import { z } from "zod";
 
 import n, { createClient } from "../src/index";
 
-const server = n.createServer({
-  health: n.endpoint({
+const server = zr.createServer({
+  health: zr.endpoint({
     handler: async () => ({ ok: true as const })
   }),
-  tasks: n.createServer({
-    add: n.endpoint({ text: z.string() }, async ({ text }) => ({ ok: true as const, text })),
-    get: n.endpoint(
+  tasks: zr.createServer({
+    add: zr.endpoint({ text: z.string() }, async ({ text }) => ({ ok: true as const, text })),
+    get: zr.endpoint(
       { taskListId: z.string() },
       async ({ taskListId }) => [{ _id: taskListId, text: "Test task" }]
     )
@@ -27,7 +27,7 @@ describe("server runtime", () => {
   test("keeps client types aligned with the server", () => {
     const rpc = createClient<typeof server>({
       fetch: async (input, init) =>
-        n.POSTHandler(
+        zr.POSTHandler(
           server,
           new Request(String(input), {
             body: init?.body as BodyInit,
@@ -46,7 +46,7 @@ describe("server runtime", () => {
 
 describe("http adapters", () => {
   test("serves app router requests", async () => {
-    const response = await n.POSTHandler(
+    const response = await zr.POSTHandler(
       server,
       new Request("http://localhost/api/rpc", {
         body: JSON.stringify({
@@ -65,7 +65,7 @@ describe("http adapters", () => {
   });
 
   test("serves pages router requests", async () => {
-    const handler = n.createPagesHandler(server);
+    const handler = zr.createPagesHandler(server);
     let statusCode = 200;
     let jsonBody: unknown;
     const headers = new Map<string, string>();
@@ -103,7 +103,7 @@ describe("http adapters", () => {
   test("client throws structured errors", async () => {
     const rpc = createClient<typeof server>({
       fetch: async (input, init) =>
-        n.POSTHandler(
+        zr.POSTHandler(
           server,
           new Request(String(input), {
             body: init?.body as BodyInit,

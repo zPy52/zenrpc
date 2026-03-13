@@ -3,28 +3,28 @@
 ## App Router
 
 ```ts
-import n from "zenrpc";
+import zr from "zenrpc";
 import { server } from "@/zenrpc/server";
 
-export const POST = n.POSTHandler(server);
+export const POST = zr.POSTHandler(server);
 ```
 
 ## Pages Router
 
 ```ts
-import n from "zenrpc";
+import zr from "zenrpc";
 import { server } from "@/zenrpc/server";
 
-export default n.createPagesHandler(server);
+export default zr.createPagesHandler(server);
 ```
 
 ## Shared Client
 
 ```ts
-import n from "zenrpc";
+import zr from "zenrpc";
 import type { PublicApi } from "./api-types";
 
-export const rpc = n.createClient<PublicApi>({
+export const rpc = zr.createClient<PublicApi>({
   url: "/api/rpc"
 });
 ```
@@ -32,7 +32,7 @@ export const rpc = n.createClient<PublicApi>({
 If the code runs outside the browser, use an absolute URL:
 
 ```ts
-const rpc = n.createClient<PublicApi>({
+const rpc = zr.createClient<PublicApi>({
   url: "http://localhost:3000/api/rpc"
 });
 ```
@@ -50,15 +50,15 @@ export type PublicApi = typeof server;
 ```ts
 import "server-only";
 
-import n from "zenrpc";
+import zr from "zenrpc";
 import { z } from "zod";
 
-export const server = n.createServer({
-  tasks: n.createServer({
-    add: n.endpoint({ text: z.string() }, async ({ text }) => {
+export const server = zr.createServer({
+  tasks: zr.createServer({
+    add: zr.endpoint({ text: z.string() }, async ({ text }) => {
       return { _id: crypto.randomUUID(), text };
     }),
-    get: n.endpoint({ taskListId: z.string() }, async ({ taskListId }) => {
+    get: zr.endpoint({ taskListId: z.string() }, async ({ taskListId }) => {
       return [{ _id: taskListId, text: "Example task" }];
     })
   })

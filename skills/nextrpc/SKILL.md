@@ -46,7 +46,7 @@ If the project already has a root-level `app/` or `pages/` directory, the route 
 Prefer the two-argument form for endpoints with inputs:
 
 ```ts
-get: n.endpoint({ taskListId: z.string() }, async ({ taskListId }) => {
+get: zr.endpoint({ taskListId: z.string() }, async ({ taskListId }) => {
   return [{ _id: taskListId, text: "Example task" }];
 })
 ```
@@ -56,7 +56,7 @@ That form gives the best handler-argument inference.
 The config-object form also exists:
 
 ```ts
-n.endpoint({
+zr.endpoint({
   args: { taskListId: z.string() },
   handler: async (args) => { ... }
 })
@@ -68,11 +68,11 @@ Return only JSON-serializable data or `void`.
 
 ## Wiring Rules
 
-- In `client.ts`, use `n.createClient<PublicApi>()`.
+- In `client.ts`, use `zr.createClient<PublicApi>()`.
 - In `api-types.ts`, export `type PublicApi = typeof server`.
-- In `server.ts`, build the tree with `n.createServer(...)`.
-- For app router, use `export const POST = n.POSTHandler(server)`.
-- For pages router, use `export default n.createPagesHandler(server)`.
+- In `server.ts`, build the tree with `zr.createServer(...)`.
+- For app router, use `export const POST = zr.POSTHandler(server)`.
+- For pages router, use `export default zr.createPagesHandler(server)`.
 - Call server endpoints directly with `await server.tasks.get(...)` when you are already on the server.
 
 ## Client Rules

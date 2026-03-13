@@ -45,17 +45,17 @@ And it also creates the route handler for your Next.js router.
 ```ts
 import "server-only";
 
-import n from "zenrpc";
+import zr from "zenrpc";
 import { z } from "zod";
 
 const taskLists = {
   default: [{ _id: "task_1", text: "Ship ZenRPC" }]
 };
 
-export const server = n.createServer({
+export const server = zr.createServer({
   posts: {
     options: {
-      get: n.endpoint({ postId: z.string() }, async ({ postId }) => ({
+      get: zr.endpoint({ postId: z.string() }, async ({ postId }) => ({
         body: `This post came from ${postId}.`,
         id: postId,
         title: "Example post"
@@ -63,12 +63,12 @@ export const server = n.createServer({
     }
   },
 
-  tasks: n.createServer({
-    get: n.endpoint({ taskListId: z.string() }, async ({ taskListId }) => {
+  tasks: zr.createServer({
+    get: zr.endpoint({ taskListId: z.string() }, async ({ taskListId }) => {
       return taskListId === "default" ? taskLists.default : [];
     }),
 
-    add: n.endpoint({ text: z.string() }, async ({ text }) => {
+    add: zr.endpoint({ text: z.string() }, async ({ text }) => {
       const task = { _id: `task_${Date.now()}`, text };
       taskLists.default.push(task);
       return task;
@@ -88,10 +88,10 @@ export type PublicApi = typeof server;
 ### 3. Create the client
 
 ```ts
-import n from "zenrpc";
+import zr from "zenrpc";
 import type { PublicApi } from "./api-types";
 
-export const rpc = n.createClient<PublicApi>({
+export const rpc = zr.createClient<PublicApi>({
   url: "/api/rpc"
 });
 ```
@@ -101,19 +101,19 @@ export const rpc = n.createClient<PublicApi>({
 App Router:
 
 ```ts
-import n from "zenrpc";
+import zr from "zenrpc";
 import { server } from "@/zenrpc/server";
 
-export const POST = n.POSTHandler(server);
+export const POST = zr.POSTHandler(server);
 ```
 
 Pages Router:
 
 ```ts
-import n from "zenrpc";
+import zr from "zenrpc";
 import { server } from "@/zenrpc/server";
 
-export default n.createPagesHandler(server);
+export default zr.createPagesHandler(server);
 ```
 
 ## Calling From The Client
@@ -185,8 +185,8 @@ await server.tasks.add({ text: "Write docs" });
 Builds a nested RPC router from plain objects.
 
 ```ts
-const server = n.createServer({
-  health: n.endpoint(async () => "ok")
+const server = zr.createServer({
+  health: zr.endpoint(async () => "ok")
 });
 ```
 
@@ -197,13 +197,13 @@ Creates an endpoint with optional `zod` validation.
 No args:
 
 ```ts
-const ping = n.endpoint(async () => "pong");
+const ping = zr.endpoint(async () => "pong");
 ```
 
 With args:
 
 ```ts
-const getPost = n.endpoint({ postId: z.string() }, async ({ postId }) => {
+const getPost = zr.endpoint({ postId: z.string() }, async ({ postId }) => {
   return { id: postId };
 });
 ```
@@ -211,7 +211,7 @@ const getPost = n.endpoint({ postId: z.string() }, async ({ postId }) => {
 You can also pass a config object:
 
 ```ts
-const getPost = n.endpoint({
+const getPost = zr.endpoint({
   args: { postId: z.string() },
   handler: async ({ postId }) => ({ id: postId })
 });
@@ -222,7 +222,7 @@ const getPost = n.endpoint({
 Creates a typed client from your server type.
 
 ```ts
-const rpc = n.createClient<PublicApi>({
+const rpc = zr.createClient<PublicApi>({
   url: "/api/rpc",
   headers: async () => ({
     authorization: "Bearer token"
