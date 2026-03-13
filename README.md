@@ -48,32 +48,16 @@ import "server-only";
 import zr from "zenrpc";
 import { z } from "zod";
 
-const taskLists = {
-  default: [{ _id: "task_1", text: "Ship ZenRPC" }]
-};
-
 export const server = zr.createServer({
-  posts: {
-    options: {
-      get: zr.endpoint({ postId: z.string() }, async ({ postId }) => ({
-        body: `This post came from ${postId}.`,
-        id: postId,
-        title: "Example post"
-      }))
-    }
-  },
-
-  tasks: zr.createServer({
-    get: zr.endpoint({ taskListId: z.string() }, async ({ taskListId }) => {
-      return taskListId === "default" ? taskLists.default : [];
-    }),
-
+  tasks: {
+    list: zr.endpoint(async () => [
+      { id: "task_1", text: "Ship ZenRPC" },
+      { id: "task_2", text: "Write docs" }
+    ]),
     add: zr.endpoint({ text: z.string() }, async ({ text }) => {
-      const task = { _id: `task_${Date.now()}`, text };
-      taskLists.default.push(task);
-      return task;
+      return { id: crypto.randomUUID(), text };
     })
-  })
+  }
 });
 ```
 
@@ -125,7 +109,7 @@ import { useEffect, useState } from "react";
 import { rpc } from "@/zenrpc/client";
 
 type Task = {
-  _id: string;
+  id: string;
   text: string;
 };
 
@@ -133,23 +117,19 @@ export default function HomePage() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
   useEffect(() => {
-    const run = async () => {
-      const result = await rpc.tasks.get({ taskListId: "default" });
-      setTasks(result);
-    };
-
-    void run();
+    void rpc.tasks.list().then(setTasks);
   }, []);
 
   return (
     <main>
       {tasks.map((task) => (
-        <div key={task._id}>{task.text}</div>
+        <div key={task.id}>{task.text}</div>
       ))}
 
       <button
         onClick={async () => {
-          await rpc.tasks.add({ text: "New task" });
+          const newTask = await rpc.tasks.add({ text: "New task" });
+          setTasks((current) => [...current, newTask]);
         }}
       >
         Add task
@@ -173,8 +153,7 @@ The same server object is directly callable on the server with full types:
 ```ts
 import { server } from "@/zenrpc/server";
 
-await server.posts.options.get({ postId: "post_1" });
-await server.tasks.get({ taskListId: "default" });
+await server.tasks.list();
 await server.tasks.add({ text: "Write docs" });
 ```
 

@@ -1,6 +1,6 @@
 {
   "name": "zenrpc",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Type-safe RPC for Next.js app and pages router",
   "keywords": [
     "nextjs",

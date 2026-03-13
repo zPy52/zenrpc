@@ -60,9 +60,27 @@ function detectPackageManager(cwd: string): PackageManager {
 }
 
 function readOwnVersion() {
-  const packageJsonPath = resolve(__dirname, "..", "package.json");
+  const packageJsonPath = resolve(__dirname, "..", "..", "package.json");
   const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8")) as { version: string };
   return packageJson.version;
+}
+
+function readPackageName(packageJsonPath: string) {
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8")) as { name?: string };
+  return packageJson.name ?? null;
+}
+
+function resolveRuntimeImport(cwd: string, fromFile: string) {
+  const projectPackageJsonPath = resolve(cwd, "package.json");
+  const ownPackageJsonPath = resolve(__dirname, "..", "..", "package.json");
+  const projectPackageName = readPackageName(projectPackageJsonPath);
+  const ownPackageName = readPackageName(ownPackageJsonPath);
+
+  if (projectPackageName && ownPackageName && projectPackageName === ownPackageName) {
+    return relativeImport(fromFile, resolve(cwd, "src/index.ts"));
+  }
+
+  return ownPackageName ?? "zenrpc";
 }
 
 function chooseAppRouteFile(cwd: string) {
@@ -116,11 +134,12 @@ function resolveRouterTargets(cwd: string, router: RouterMode) {
 
 function createNextrpcFiles(cwd: string, sourceDir: string): GeneratedFile[] {
   const nextrpcDir = resolve(cwd, sourceDir);
+  const runtimeImport = resolveRuntimeImport(cwd, resolve(nextrpcDir, "server.ts"));
 
   return [
     {
       contents: [
-        'import zr from "zenrpc";',
+        `import zr from "${resolveRuntimeImport(cwd, resolve(nextrpcDir, "client.ts"))}";`,
         'import type { PublicApi } from "./api-types";',
         "",
         "export const rpc = zr.createClient<PublicApi>({",
@@ -143,7 +162,7 @@ function createNextrpcFiles(cwd: string, sourceDir: string): GeneratedFile[] {
       contents: [
         'import "server-only";',
         "",
-        'import zr from "zenrpc";',
+        `import zr from "${runtimeImport}";`,
         'import { z } from "zod";',
         "",
         "const taskLists = {",
@@ -187,7 +206,7 @@ function createRouteFiles(cwd: string, sourceDir: string, router: RouterMode): G
     const appRouteFile = chooseAppRouteFile(cwd);
     files.push({
       contents: [
-        'import zr from "zenrpc";',
+        `import zr from "${resolveRuntimeImport(cwd, appRouteFile)}";`,
         `import { server } from "${relativeImport(appRouteFile, serverFile)}";`,
         "",
         "export const POST = zr.POSTHandler(server);",
@@ -201,7 +220,7 @@ function createRouteFiles(cwd: string, sourceDir: string, router: RouterMode): G
     const pagesRouteFile = choosePagesRouteFile(cwd);
     files.push({
       contents: [
-        'import zr from "zenrpc";',
+        `import zr from "${resolveRuntimeImport(cwd, pagesRouteFile)}";`,
         `import { server } from "${relativeImport(pagesRouteFile, serverFile)}";`,
         "",
         "export default zr.createPagesHandler(server);",
