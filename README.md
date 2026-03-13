@@ -157,6 +157,55 @@ await server.tasks.list();
 await server.tasks.add({ text: "Write docs" });
 ```
 
+## Calling From Outside The App
+
+If you want to call the RPC route from another app or service, send a `POST` request to `/api/rpc` with a JSON body shaped like this:
+
+```json
+{
+  "path": ["tasks", "add"],
+  "args": {
+    "text": "Write docs"
+  }
+}
+```
+
+- `path` is the endpoint path as an array of keys
+- `args` is the endpoint input object
+
+For endpoints with no input, omit `args`:
+
+```json
+{
+  "path": ["tasks", "list"]
+}
+```
+
+Example with `curl`:
+
+```bash
+curl -X POST http://localhost:3000/api/rpc \
+  -H "content-type: application/json" \
+  -d '{
+    "path": ["tasks", "add"],
+    "args": {
+      "text": "Created from another app"
+    }
+  }'
+```
+
+Successful responses look like:
+
+```json
+{
+  "ok": true,
+  "result": {
+    "id": "task_123",
+    "text": "Created from another app"
+  }
+}
+```
+
 ## API
 
 ### `createServer()`
@@ -251,7 +300,3 @@ Flags:
 - If an endpoint has no args, call it with no parameters
 - If validation fails, ZenRPC returns a typed error response with status `400`
 - Unknown endpoints return `404`
-
-## License
-
-MIT
